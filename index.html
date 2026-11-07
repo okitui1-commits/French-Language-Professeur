@@ -58,4 +58,25 @@ const practicePhrases=["Je voudrais apprendre le français.","Pouvez-vous parler
 document.getElementById("speakModel").addEventListener("click",()=>sayFrench(document.getElementById("speakPhrase").textContent));
 document.getElementById("newPhrase").addEventListener("click",()=>{phraseIndex=(phraseIndex+1)%practicePhrases.length;document.getElementById("speakPhrase").textContent=practicePhrases[phraseIndex]});
 document.getElementById("count").addEventListener("click",()=>{const t=document.getElementById("draft").value.trim(),n=t.split(/\s+/).filter(Boolean).length,notes=[];if(!t)notes.push("Écrivez quelques phrases pour commencer.");else{if(!/[.!?]$/.test(t))notes.push("Ajoutez une ponctuation finale.");if(!/^[A-ZÀÂÇÉÈÊËÎÏÔÙÛÜ]/.test(t))notes.push("Commencez par une majuscule.");if(n<40)notes.push("Essayez d’atteindre au moins 40 mots.");}document.getElementById("wordcount").textContent=n+" mot(s). "+notes.join(" ")});
+ <div id="paypal-button-container-P-5FH78946L3431612DNLXPD4Q"></div>
+<script src="https://www.paypal.com/sdk/js?client-id=BAAQ-ZyY8EytBklzPAAgu0Dv7GCLVYqoCa-BddljBLxhkzEPQRwjofybhSm_wrKuX1167WPh8Kf7vURCB8&vault=true&intent=subscription" data-sdk-integration-source="button-factory"></script>
+<script>
+  paypal.Buttons({
+      style: {
+          shape: 'rect',
+          color: 'gold',
+          layout: 'vertical',
+          label: 'subscribe'
+      },
+      createSubscription: function(data, actions) {
+        return actions.subscription.create({
+          /* Creates the subscription */
+          plan_id: 'P-5FH78946L3431612DNLXPD4Q'
+        });
+      },
+      onApprove: function(data, actions) {
+        alert(data.subscriptionID); // You can add optional success message for the subscriber here
+      }
+  }).render('#paypal-button-container-P-5FH78946L3431612DNLXPD4Q'); // Renders the PayPal button
+</script>
 </script></body></html>
