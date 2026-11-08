@@ -113,7 +113,7 @@ function advanceQuiz(){
  }
  if(level==="A1"&&quizSetIndex===1){
   level="A2";localStorage.setItem("fr-level","A2");setLevel("A2");
-  quizSetIndex=2;quizIndex=0;quizScore=0;quizItems=curriculum.A2.map(x=>({q:x.q,opts:x.opts,a:x.a,why:x.why}));
+  quizSetIndex=2;quizIndex=0;quizScore=0;quizItems=levelExerciseSets.A2.map(x=>({...x}));
   document.getElementById("quizLevel").textContent="A2";
   document.getElementById("quizCount").textContent="Niveau A2 débloqué · Début du parcours";
   document.getElementById("quizPrompt").textContent="Bravo ! Tu as terminé les 50 questions A1. Tu passes maintenant au niveau A2.";
