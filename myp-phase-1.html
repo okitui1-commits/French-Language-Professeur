@@ -57,57 +57,64 @@ const questions=[
 {q:"Quel article convient ? ___ école est grande.",opts:["Le","La","L'"],a:2,why:"Devant une voyelle, le/la s'élide : « l'école »."},
 {q:"Quel est le pluriel de « un livre » ?",opts:["des livres","des livre","des livrees"],a:0,why:"On écrit « des livres » : article pluriel et -s au nom."},
 {q:"Choisis la négation correcte.",opts:["Je n'aime pas le tennis.","Je ne pas aime le tennis.","Je n'aime le tennis pas."],a:0,why:"La négation simple encadre le verbe conjugué : ne/n' + verbe + pas."},
-{q:"Quelle question correspond à la réponse « J'habite à Nairobi » ?",opts:["Qui ?","Où ?","Quand ?"],a:1,why:"« Où ? » demande un lieu."},
+{q:"Quelle question correspond à « J'habite à Nairobi » ?",opts:["Qui ?","Où ?","Quand ?"],a:1,why:"« Où ? » demande un lieu."},
 {q:"Comment dit-on « I like music » ?",opts:["Je suis la musique.","J'aime la musique.","J'ai la musique."],a:1,why:"Le verbe aimer exprime un goût : « j'aime la musique »."},
 {q:"Complète : Dans mon sac, il y a ___ trousse et ___ livre.",opts:["un / une","une / un","la / le"],a:1,why:"« Trousse » est féminin : une trousse. « Livre » est masculin : un livre."},
 {q:"Remets les mots dans l'ordre : appelle / je / m' / Daniel.",opts:["Je m'appelle Daniel.","Je appelle m' Daniel.","M'appelle je Daniel."],a:0,why:"La forme correcte est « Je m'appelle Daniel »."},
-{q:"Lis : « Noah a onze ans et habite à Kisumu. » Où habite Noah ?",opts:["À Nairobi","À Kisumu","À Mombasa"],a:1,why:"Le texte indique explicitement qu'il habite à Kisumu."},
-{q:"Quelle phrase présente correctement plusieurs élèves ?",opts:["Nous sommes élèves.","Nous est élève.","Nous sommes élève."],a:0,why:"Avec « nous », être devient « sommes » et le nom se met ici au pluriel : élèves."}
+{q:"Noah a onze ans et habite à Kisumu. Où habite Noah ?",opts:["À Nairobi","À Kisumu","À Mombasa"],a:1,why:"Le texte indique qu'il habite à Kisumu."},
+{q:"Quelle phrase présente correctement plusieurs élèves ?",opts:["Nous sommes élèves.","Nous est élève.","Nous sommes élève."],a:0,why:"Avec « nous », être devient « sommes » et le nom se met au pluriel : élèves."}
 ];
-let index=0,score=0,locked=false,answers=[];
+let index=0,score=0,locked=false,timer=null;
 const $=id=>document.getElementById(id);
-function render(){
-locked=false;$("quiz-feedback").textContent="";$("quiz-submit").hidden=false;$("quiz-next").hidden=true;
+const submit=$("quiz-submit"),next=$("quiz-next");
+function showQuestion(){
+locked=false;clearTimeout(timer);
 $("quiz-progress").textContent="Question "+(index+1)+" sur "+questions.length;
 $("quiz-score").textContent="Score : "+score;
 $("quiz-bar").style.width=(index/questions.length*100)+"%";
 $("quiz-question").textContent=questions[index].q;
-const box=$("quiz-options");box.replaceChildren();
-questions[index].opts.forEach((option,i)=>{const label=document.createElement("label");label.style.display="block";label.style.padding="7px";
+$("quiz-feedback").textContent="";
+$("quiz-options").replaceChildren();
+questions[index].opts.forEach((option,i)=>{
+const label=document.createElement("label");label.style.display="block";label.style.padding="7px";
 const input=document.createElement("input");input.type="radio";input.name="quiz-answer";input.value=i;input.style.marginRight="9px";
-label.append(input,document.createTextNode(option));box.append(label);});
-}
-$("quiz-submit").addEventListener("click",()=>{
-if(locked)return;const selected=document.querySelector('input[name="quiz-answer"]:checked');
-if(!selected){$("quiz-feedback").textContent="Choisis une réponse avant de valider.";return;}
-locked=true;const q=questions[index],correct=Number(selected.value)===q.a;
-if(correct)score++;answers.push(correct);
-$("quiz-feedback").textContent=(correct?"Bonne réponse. ":"Pas tout à fait. Réponse correcte : "+q.opts[q.a]+". ")+q.why;
-$("quiz-score").textContent="Score : "+score;
-$("quiz-submit").hidden=true;
-$("quiz-next").hidden=false;
-$("quiz-next").textContent=index===questions.length-1?"Afficher mon résultat":"Passer à la question suivante";
-$("quiz-feedback").textContent+=" Passage automatique à la suite dans 2 secondes.";
-window.clearTimeout(window.__quizAdvanceTimer);
-window.__quizAdvanceTimer=window.setTimeout(advance,2000);
+label.append(input,document.createTextNode(option));$("quiz-options").append(label);
 });
-function advance(){
-if(!locked)return;
-window.clearTimeout(window.__quizAdvanceTimer);
-index++;
-if(index<questions.length){render();return;}
+submit.hidden=false;next.hidden=true;next.textContent="Question suivante →";
+}
+function finish(){
+clearTimeout(timer);
 $("quiz-progress").textContent="Parcours terminé";
-$("quiz-bar").style.width="100%";$("quiz-question").textContent="Ton résultat : "+score+" / "+questions.length;
+$("quiz-bar").style.width="100%";
+$("quiz-question").textContent="Ton résultat : "+score+" / "+questions.length;
 $("quiz-options").replaceChildren();
 $("quiz-feedback").textContent=score>=10?"Très bon travail ! Continue à utiliser ces structures en parlant et en écrivant.":score>=7?"Bon effort. Relis les explications des questions à revoir, puis recommence le parcours.":"Reprends les explications de grammaire, puis recommence le parcours pour progresser.";
-$("quiz-submit").hidden=true;$("quiz-next").textContent="Recommencer le parcours";$("quiz-next").hidden=false;
-$("quiz-next").onclick=()=>{window.clearTimeout(window.__quizAdvanceTimer);index=0;score=0;answers=[];$("quiz-next").onclick=null;render();};
+submit.hidden=true;next.hidden=false;next.textContent="Recommencer le parcours";locked=true;
 }
-$("quiz-next").addEventListener("click",()=>{
-if(!locked)return;
-advance();
+function goNext(){
+clearTimeout(timer);
+if(index===questions.length-1){finish();return;}
+index++;showQuestion();
+}
+submit.addEventListener("click",()=>{
+if(locked)return;
+const selected=document.querySelector('input[name="quiz-answer"]:checked');
+if(!selected){$("quiz-feedback").textContent="Choisis une réponse avant de valider.";return;}
+locked=true;const q=questions[index],correct=Number(selected.value)===q.a;
+if(correct)score++;
+$("quiz-score").textContent="Score : "+score;
+$("quiz-feedback").textContent=(correct?"Bonne réponse. ":"Pas tout à fait. Réponse correcte : "+q.opts[q.a]+". ")+q.why;
+submit.hidden=true;next.hidden=false;
+next.textContent=index===questions.length-1?"Afficher mon résultat":"Question suivante →";
+$("quiz-feedback").textContent+=" La suite s'affichera automatiquement dans 5 secondes, ou tu peux appuyer sur « Question suivante ».";
+timer=setTimeout(goNext,5000);
 });
-render();
+next.addEventListener("click",()=>{
+if(!locked)return;
+if(index===questions.length-1){index=0;score=0;locked=false;showQuestion();return;}
+goNext();
+});
+showQuestion();
 })();
 </script>
 </main><footer style="text-align:center;padding:25px;color:#637087">PEI / MYP · Français · Phase 1</footer></body></html>
