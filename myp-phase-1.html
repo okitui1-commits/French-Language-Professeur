@@ -86,17 +86,26 @@ $("quiz-feedback").textContent=(correct?"Bonne réponse. ":"Pas tout à fait. R�
 $("quiz-score").textContent="Score : "+score;
 $("quiz-submit").hidden=true;
 $("quiz-next").hidden=false;
-$("quiz-next").textContent=index===questions.length-1?"Voir mon résultat":"Question suivante →";
+$("quiz-next").textContent=index===questions.length-1?"Afficher mon résultat":"Passer à la question suivante";
+$("quiz-feedback").textContent+=" Passage automatique à la suite dans 2 secondes.";
+window.clearTimeout(window.__quizAdvanceTimer);
+window.__quizAdvanceTimer=window.setTimeout(advance,2000);
 });
-$("quiz-next").addEventListener("click",()=>{
-if(!locked)return;index++;
+function advance(){
+if(!locked)return;
+window.clearTimeout(window.__quizAdvanceTimer);
+index++;
 if(index<questions.length){render();return;}
 $("quiz-progress").textContent="Parcours terminé";
 $("quiz-bar").style.width="100%";$("quiz-question").textContent="Ton résultat : "+score+" / "+questions.length;
 $("quiz-options").replaceChildren();
-$("quiz-feedback").textContent=score>=10?"Très bon travail ! Continue à utiliser ces structures en parlant et en écrivant.":score>=7?"Bon effort. Relis les explications des questions à revoir, puis entraîne-toi à nouveau.":"Reprends les explications de grammaire, puis recommence le parcours pour progresser.";
+$("quiz-feedback").textContent=score>=10?"Très bon travail ! Continue à utiliser ces structures en parlant et en écrivant.":score>=7?"Bon effort. Relis les explications des questions à revoir, puis recommence le parcours.":"Reprends les explications de grammaire, puis recommence le parcours pour progresser.";
 $("quiz-submit").hidden=true;$("quiz-next").textContent="Recommencer le parcours";$("quiz-next").hidden=false;
-$("quiz-next").onclick=()=>{index=0;score=0;answers=[];$("quiz-next").onclick=null;render();};
+$("quiz-next").onclick=()=>{window.clearTimeout(window.__quizAdvanceTimer);index=0;score=0;answers=[];$("quiz-next").onclick=null;render();};
+}
+$("quiz-next").addEventListener("click",()=>{
+if(!locked)return;
+advance();
 });
 render();
 })();
