@@ -113,7 +113,7 @@ function buildQuiz(){
 function renderQuizQuestion(){
  clearTimeout(quizTimer);quizLocked=false;
  const item=quizItems[quizIndex],choices=document.getElementById("choices");
- document.getElementById("quizCount").textContent="Exercice "+(quizSetIndex+1)+" · Question "+(quizIndex+1)+" sur "+quizItems.length+" · Score : "+quizScore;
+ document.getElementById("quizCount").textContent=(level==="A1"?"Exercice "+(quizSetIndex+1):"Niveau "+level)+" · Question "+(quizIndex+1)+" sur "+quizItems.length+" · Score : "+quizScore;
  document.getElementById("quizBar").style.width=(quizIndex/quizItems.length*100)+"%";
  document.getElementById("quizPrompt").textContent=item.q;document.getElementById("feedback").textContent="";
  choices.replaceChildren();
@@ -135,6 +135,16 @@ function advanceQuiz(){
   quizSetIndex=1;quizIndex=0;quizItems=a1ExerciseSets[quizSetIndex].map(([q,opts,a,why])=>({q,opts,a,why}));
   document.getElementById("feedback").textContent="Bravo ! Le premier exercice est terminé. Le deuxième exercice commence.";
   renderQuizQuestion();return;
+ }
+ if(level==="A1"&&quizSetIndex===1){
+  level="A2";localStorage.setItem("fr-level","A2");setLevel("A2");
+  quizSetIndex=2;quizIndex=0;quizScore=0;quizItems=curriculum.A2.map(x=>({q:x.q,opts:x.opts,a:x.a,why:x.why}));
+  document.getElementById("quizLevel").textContent="A2";
+  document.getElementById("quizCount").textContent="Niveau A2 débloqué · Début du parcours";
+  document.getElementById("quizPrompt").textContent="Bravo ! Tu as terminé les 50 questions A1. Tu passes maintenant au niveau A2.";
+  document.getElementById("choices").replaceChildren();
+  document.getElementById("feedback").textContent="Le premier exercice A2 va commencer.";
+  quizLocked=true;quizTimer=setTimeout(()=>{quizIndex=0;renderQuizQuestion();},1800);return;
  }
  document.getElementById("quizCount").textContent="Parcours terminé";document.getElementById("quizBar").style.width="100%";
  document.getElementById("quizPrompt").textContent="Résultat : "+quizScore+" / "+quizItems.length;
