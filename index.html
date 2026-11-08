@@ -47,43 +47,99 @@ const levels=document.getElementById("levels");Object.keys(descriptions).forEach
 function show(id){if(id==="path")renderPath();document.querySelectorAll("main section.panel").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");document.querySelectorAll("aside nav button").forEach(b=>b.classList.toggle("active",b.dataset.view===id))}
 document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.view)));document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>show(b.dataset.go)));
 document.getElementById("complete").addEventListener("click",()=>{if(!localStorage.getItem("fr-basic-lesson-done")){done++;localStorage.setItem("fr-done",done);localStorage.setItem("fr-basic-lesson-done","1")}update();document.getElementById("complete").textContent="Leçon terminée ✓"});
-let quizItems=[],quizIndex=0,quizLocked=false,quizTimer=null,quizScore=0;
+const a1ExerciseSets=[
+[
+["Chaque matin, nous ___ le français.",["parlez","parlons","parlent","parle"],1,"Avec « nous », on dit « nous parlons ». "],
+["Je ___ à Nairobi.",["habites","habitent","habite","habitons"],2,"Avec « je », on dit « j’habite » ; le h de habiter est muet."],
+["Tu ___ quatorze ans.",["as","a","ai","avons"],0,"Le verbe avoir avec « tu » donne « tu as »."],
+["Elle ___ française.",["suis","es","est","sommes"],2,"Le verbe être avec « elle » donne « elle est »."],
+["Vous ___ dans une école.",["étudions","étudiez","étudient","étudies"],1,"Avec « vous », on dit « vous étudiez »."],
+["Ils ___ au football.",["joue","jouons","jouez","jouent"],3,"Avec « ils », le verbe jouer prend -ent : ils jouent."],
+["Nous ___ une sœur.",["avons","avez","ont","as"],0,"Avec « nous », le verbe avoir donne « nous avons »."],
+["Tu ___ à quelle heure ?",["commence","commences","commençons","commencez"],1,"Avec « tu », on ajoute -es : tu commences."],
+["___ école est grande.",["Le","La","L’","Les"],2,"Devant une voyelle, « la » devient « l’ » : l’école."],
+["C’est ___ livre.",["une","un","des","la"],1,"« Livre » est masculin singulier : un livre."],
+["J’ai ___ amie à Mombasa.",["un","le","une","des"],2,"« Amie » est féminin singulier : une amie."],
+["Nous n’aimons ___ le café.",["pas","plus de","jamais de ne","non"],0,"La négation simple encadre le verbe : ne/n’ … pas."],
+["Je ___ étudiant.",["suis","es","est","être"],0,"Le sujet « je » se conjugue avec « suis »."],
+["Vous ___ comment ?",["t’appelles","s’appellent","vous appelez","m’appelle"],2,"Avec « vous », on dit « vous vous appelez » ; dans les choix, la forme verbale proposée est « vous appelez »."],
+["Il ___ une voiture rouge.",["as","ont","a","avons"],2,"Avec « il », le verbe avoir donne « il a »."],
+["Elles ___ la musique.",["écoute","écoutes","écoutons","écoutent"],3,"Avec « elles », on écrit « elles écoutent »."],
+["Nous ___ à huit heures.",["mange","manges","mangeons","mangent"],2,"Avec « nous », le verbe manger donne « nous mangeons »."],
+["Tu ___ français ?",["parle","parles","parlons","parlez"],1,"Avec « tu », on écrit « tu parles »."],
+["Il habite ___ Kenya.",["au","à la","aux","en"],0,"On dit « au Kenya » avec un pays masculin."],
+["J’habite ___ Nairobi.",["au","à","en","aux"],1,"Pour une ville, on emploie généralement « à » : à Nairobi."],
+["C’est ___ stylos.",["un","une","des","le"],2,"Le nom « stylos » est masculin pluriel : des stylos."],
+["___ sont mes amis.",["Il","Elle","Ce","Ceux"],3,"« Ceux » est un pronom démonstratif masculin pluriel."],
+["Aujourd’hui, nous ___ contents.",["sommes","êtes","sont","est"],0,"Avec « nous », le verbe être donne « nous sommes »."],
+["Je ___ pas anglais.",["ne suis","n’es","n’est","ne sommes"],0,"La négation correcte est « je ne suis pas »."],
+["Comment ___ tu ?",["va","vas","allez","vont"],1,"Avec « tu », le verbe aller donne « tu vas »."]
+],
+[
+["Le matin, elle ___ du thé.",["bois","boit","buvons","buvez"],1,"Avec « elle », boire se conjugue « boit »."],
+["Nous ___ au marché le samedi.",["vais","vas","allons","vont"],2,"Avec « nous », aller se conjugue « allons »."],
+["Vous ___ de France ?",["viens","vient","venez","venons"],2,"Avec « vous », venir se conjugue « venez »."],
+["Ils ___ leurs devoirs.",["fait","fais","faisons","font"],3,"Avec « ils », faire se conjugue « font »."],
+["Je ___ un livre.",["lis","lit","lisez","lisons"],0,"Avec « je », lire se conjugue « lis »."],
+["Tu ___ à la maison.",["reste","restes","restons","restent"],1,"Avec « tu », rester prend -es : tu restes."],
+["Ma mère ___ dans un hôpital.",["travaille","travailles","travaillons","travaillent"],0,"Avec « ma mère », le sujet est elle : elle travaille."],
+["Les enfants ___ dans le jardin.",["joue","joues","jouons","jouent"],3,"« Les enfants » est pluriel : ils jouent."],
+["Je prends ___ bus.",["le","la","les","une"],0,"« Bus » est masculin singulier : le bus."],
+["Elle a ___ orange.",["un","une","des","le"],1,"« Orange » (le fruit) est féminin : une orange."],
+["Nous avons ___ amis.",["un","une","des","la"],2,"Devant un nom pluriel indéfini, on emploie « des »."],
+["Il n’aime ___ les maths.",["pas","ne","non","jamais pas"],0,"La négation simple est « ne … pas » : il n’aime pas."],
+["Je vais ___ école.",["à le","au","à l’","aux"],2,"« École » commence par une voyelle : à l’école."],
+["Elles sont ___ .",["fatigué","fatigués","fatiguées","fatiguée"],2,"Avec « elles », l’adjectif féminin pluriel s’écrit « fatiguées »."],
+["Paul et Marc sont ___ .",["content","contente","contents","contentes"],2,"Deux garçons forment ici un groupe masculin pluriel : contents."],
+["Une maison ___ .",["blanc","blanche","blancs","blanches"],1,"« Maison » est féminin singulier : blanche."],
+["Il est ___ heure.",["huit","huites","huitième","huites"],0,"On dit « huit heures » ; le nombre huit ne prend pas de -s."],
+["Nous sommes lundi. Demain, nous serons ___ .",["dimanche","mardi","vendredi","samedi"],1,"Le lendemain de lundi est mardi."],
+["À 7 h 30, il est ___ .",["sept heures et demie","sept heures et quart","huit heures et demie","six heures et demie"],0,"7 h 30 se dit « sept heures et demie »."],
+["Je préfère le thé ___ café.",["mais","ou","au","parce"],2,"La comparaison de préférence se construit avec « préférer … à … »."],
+["Elle ___ français et anglais.",["parle","parles","parlons","parlez"],0,"Avec « elle », parler se conjugue « parle »."],
+["Tu ___ où ?",["habite","habites","habitent","habitons"],1,"Avec « tu », habiter se conjugue « habites »."],
+["Nous ___ de Nairobi.",["sommes","êtes","sont","suis"],0,"Avec « nous », être se conjugue « sommes »."],
+["Je ___ un café, s’il vous plaît.",["voudrais","voudrait","voudrions","voudrez"],0,"La formule polie avec « je » est « je voudrais »."],
+["Quel est le pluriel de « journal » ?",["journals","journales","journaux","journalses"],2,"Le pluriel courant de « journal » est « journaux »."]
+]
+];
+let quizItems=[],quizIndex=0,quizLocked=false,quizTimer=null,quizScore=0,quizSetIndex=0;
 function buildQuiz(){
- clearTimeout(quizTimer);quizIndex=0;quizScore=0;quizLocked=false;
- quizItems=level==="A1"?[{q:"Chaque matin, nous ___ le français.",opts:["parlez","parlons","parlent"],a:1,why:"Avec le sujet « nous », le verbe parler prend la terminaison -ons : nous parlons."},...curriculum.A1.map(x=>({q:x.q,opts:x.opts,a:x.a,why:x.why}))]:curriculum[level].map(x=>({q:x.q,opts:x.opts,a:x.a,why:x.why}));
+ clearTimeout(quizTimer);quizIndex=0;quizScore=0;quizSetIndex=0;quizLocked=false;
+ if(level==="A1"){quizItems=a1ExerciseSets[quizSetIndex].map(([q,opts,a,why])=>({q,opts,a,why}));}
+ else{quizItems=curriculum[level].map(x=>({q:x.q,opts:x.opts,a:x.a,why:x.why}));}
  document.getElementById("quizLevel").textContent=level;renderQuizQuestion();
 }
 function renderQuizQuestion(){
  clearTimeout(quizTimer);quizLocked=false;
  const item=quizItems[quizIndex],choices=document.getElementById("choices");
- document.getElementById("quizCount").textContent="Question "+(quizIndex+1)+" sur "+quizItems.length+" · Score : "+quizScore;
+ document.getElementById("quizCount").textContent="Exercice "+(quizSetIndex+1)+" · Question "+(quizIndex+1)+" sur "+quizItems.length+" · Score : "+quizScore;
  document.getElementById("quizBar").style.width=(quizIndex/quizItems.length*100)+"%";
- document.getElementById("quizPrompt").textContent=item.q;
- document.getElementById("feedback").textContent="";
+ document.getElementById("quizPrompt").textContent=item.q;document.getElementById("feedback").textContent="";
  choices.replaceChildren();
- item.opts.forEach((option,i)=>{const b=document.createElement("button");b.type="button";b.textContent=option;b.addEventListener("click",()=>answerQuiz(i));choices.append(b)});
- document.getElementById("nextQuestion").classList.add("hidden");
- document.getElementById("retry").classList.add("hidden");
+ item.opts.forEach((option,i)=>{const btn=document.createElement("button");btn.type="button";btn.textContent=option;btn.addEventListener("click",()=>answerQuiz(i));choices.append(btn)});
+ document.getElementById("nextQuestion").classList.add("hidden");document.getElementById("retry").classList.add("hidden");
 }
 function answerQuiz(choice){
  if(quizLocked)return;quizLocked=true;const item=quizItems[quizIndex],ok=choice===item.a;
  if(ok){quizScore++;score++;localStorage.setItem("fr-score",score);update()}
  const f=document.getElementById("feedback");f.textContent=(ok?"Bonne réponse ! ":"Pas tout à fait. La bonne réponse est « "+item.opts[item.a]+" ». ")+item.why;f.className="feedback "+(ok?"good":"bad");
- document.querySelectorAll("#choices button").forEach((b,i)=>{b.disabled=true;if(i===item.a)b.classList.add("good")});
- const next=document.getElementById("nextQuestion");next.textContent=quizIndex===quizItems.length-1?"Voir mon résultat":"Question suivante →";next.classList.remove("hidden");
- f.textContent+=" Passage automatique à la suite dans 4 secondes.";
- quizTimer=setTimeout(advanceQuiz,4000);
+ document.querySelectorAll("#choices button").forEach((btn,i)=>{btn.disabled=true;if(i===item.a)btn.classList.add("good")});
+ const next=document.getElementById("nextQuestion");next.textContent=quizIndex===quizItems.length-1?(level==="A1"&&quizSetIndex===0?"Exercice suivant →":"Voir mon résultat"):"Question suivante →";next.classList.remove("hidden");
+ f.textContent+=" Passage automatique à la suite dans 4 secondes.";quizTimer=setTimeout(advanceQuiz,4000);
 }
 function advanceQuiz(){
- if(!quizLocked)return;clearTimeout(quizTimer);quizIndex++;
- if(quizIndex<quizItems.length){renderQuizQuestion();return;}
- document.getElementById("quizCount").textContent="Parcours terminé";
- document.getElementById("quizBar").style.width="100%";
+ if(!quizLocked)return;clearTimeout(quizTimer);
+ if(quizIndex<quizItems.length-1){quizIndex++;renderQuizQuestion();return;}
+ if(level==="A1"&&quizSetIndex===0){
+  quizSetIndex=1;quizIndex=0;quizItems=a1ExerciseSets[quizSetIndex].map(([q,opts,a,why])=>({q,opts,a,why}));
+  document.getElementById("feedback").textContent="Bravo ! Le premier exercice est terminé. Le deuxième exercice commence.";
+  renderQuizQuestion();return;
+ }
+ document.getElementById("quizCount").textContent="Parcours terminé";document.getElementById("quizBar").style.width="100%";
  document.getElementById("quizPrompt").textContent="Résultat : "+quizScore+" / "+quizItems.length;
- document.getElementById("choices").replaceChildren();
- document.getElementById("feedback").textContent=quizScore===quizItems.length?"Excellent ! Toutes les réponses sont correctes.": "Tu peux revoir les explications et recommencer pour améliorer ton résultat.";
- document.getElementById("nextQuestion").classList.add("hidden");
- document.getElementById("retry").classList.remove("hidden");
+ document.getElementById("choices").replaceChildren();document.getElementById("feedback").textContent="Exercice terminé. Tu peux recommencer cette série ou choisir un autre niveau.";
+ document.getElementById("nextQuestion").classList.add("hidden");document.getElementById("retry").classList.remove("hidden");
 }
 document.getElementById("nextQuestion").addEventListener("click",advanceQuiz);
 document.getElementById("retry").addEventListener("click",buildQuiz);
