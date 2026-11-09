@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://okitui1-commits.github.io/French-Language-Professeur/sitemap.xml
